@@ -25,7 +25,7 @@ interface iClubMember {
   search_vector: string;
 }
 
-interface iNewClubMember {
+export interface iNewClubMember {
   first_name: string;
   last_name: string;
   amount: number;
@@ -105,6 +105,10 @@ const Table: React.FC<iNeedClubId> = ({ clubId }) => {
     setSearch(e.target.value);
   };
 
+  const addNewClubMember = (member: iNewClubMember) => {
+    postMember.mutate(member);
+  };
+
   if (isLoading) return <Loading />;
 
   if (error) return <p>error</p>;
@@ -120,7 +124,7 @@ const Table: React.FC<iNeedClubId> = ({ clubId }) => {
           onChange={handleSearch}
         />
         <div className="ml-auto">
-          <NewClubMember />
+          <NewClubMember addNewMember={addNewClubMember} />
           <NewSchoolYear />
         </div>
       </div>
