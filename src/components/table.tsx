@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { useQuery } from "react-query";
+import { useState, ChangeEvent } from "react";
+import { useQuery, useMutation } from "react-query";
 
 import {
   createColumnHelper,
@@ -12,7 +12,8 @@ import {
 import controller from "../controllers";
 import { iNeedClubId } from "./statistics";
 import Loading from "./loading";
-import NewMemberForm from "./form";
+import NewClubMember from "./new-club-member";
+import NewSchoolYear from "./new-school-year";
 
 interface iClubMember {
   id: number;
@@ -22,6 +23,14 @@ interface iClubMember {
   grade: string;
   club_id: number;
   search_vector: string;
+}
+
+interface iNewClubMember {
+  first_name: string;
+  last_name: string;
+  amount: number;
+  grade: string;
+  club_id: number;
 }
 
 const columnHelper = createColumnHelper<iClubMember>();
@@ -60,7 +69,7 @@ const columns = [
 ];
 
 const Table: React.FC<iNeedClubId> = ({ clubId }) => {
-  // const [search, setSearch] = useState<string>("");
+  const [search, setSearch] = useState<string>("");
   const [page, setPage] = useState<number>(1);
   const { isLoading, error, data } = useQuery(
     ["club-members", page],
@@ -74,6 +83,16 @@ const Table: React.FC<iNeedClubId> = ({ clubId }) => {
       }
     }
   );
+  const postMember = useMutation({
+    mutationFn: async (newMember: iNewClubMember) => {
+      try {
+        let res = await controller.post(`/club-members/`, newMember);
+        return res.data;
+      } catch (err) {
+        console.error(err);
+      }
+    },
+  });
 
   const table = useReactTable({
     data,
@@ -81,6 +100,10 @@ const Table: React.FC<iNeedClubId> = ({ clubId }) => {
     getCoreRowModel: getCoreRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
   });
+
+  const handleSearch = (e: ChangeEvent<HTMLInputElement>) => {
+    setSearch(e.target.value);
+  };
 
   if (isLoading) return <Loading />;
 
@@ -93,34 +116,13 @@ const Table: React.FC<iNeedClubId> = ({ clubId }) => {
           type="text"
           placeholder="Enter Name Here"
           className="input input-bordered input-accent w-full max-w-xs"
-          // onChange={setSearch}
-          // value={search}
+          value={search}
+          onChange={handleSearch}
         />
-        <button
-          className="btn btn-primary ml-auto"
-          onClick={() => {
-            if (document) {
-              (
-                document.getElementById("my_modal_1") as HTMLFormElement
-              ).showModal();
-            }
-          }}
-        >
-          New Club Member
-        </button>
-        <dialog id="my_modal_1" className="modal">
-          <form method="dialog" className="modal-box">
-            <h3 className="font-bold text-lg">Add New Club Member</h3>
-            <NewMemberForm />
-            <p className="py-4">
-              Press ESC key or click the button below to close
-            </p>
-            <div className="modal-action">
-              {/* if there is a button in form, it will close the modal */}
-              <button className="btn">Close</button>
-            </div>
-          </form>
-        </dialog>
+        <div className="ml-auto">
+          <NewClubMember />
+          <NewSchoolYear />
+        </div>
       </div>
       <div className="overflow-x-auto mt-8">
         <table className="table table-zebra">
