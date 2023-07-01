@@ -1,6 +1,6 @@
 import { useQuery } from "react-query";
 
-import controller from "../controllers";
+import controller from "../controller";
 import Loading from "./loading";
 
 export interface iNeedClubId {
@@ -17,36 +17,45 @@ const Statistics: React.FC<iNeedClubId> = ({ clubId }) => {
     }
   });
 
+  const date = new Date();
+
   if (isLoading) return <Loading />;
 
   if (error) return <p>error</p>;
 
   return (
-    <div className="flex gap-4 justify-end mt-10">
-      <div className="card w-96 bg-base-100 shadow-xl">
-        <div className="card-body">
-          <h2 className="card-title">Given this Month</h2>
-          <div className="stat-value text-primary">25.6K</div>
-        </div>
-      </div>
-      <div className="card w-96 bg-base-100 shadow-xl">
-        <div className="card-body">
-          <h2 className="card-title">Given Today</h2>
-          <div className="stat-value text-secondary">25.6K</div>
-        </div>
-      </div>
-      <div className="card w-96 bg-base-100 shadow-xl">
+    <div className="flex gap-4 mt-10">
+      <div className="card w-48 bg-base-100 shadow-xl">
         <div className="card-body">
           <h2 className="card-title">Total </h2>
           <div className="stat-value text-primary">${data.total}</div>
+          <p>
+            as of {date.getMonth()}/{date.getDate()}/{date.getFullYear()}
+          </p>
         </div>
       </div>
-      <div className="card w-96 bg-base-100 shadow-xl">
+      <div className="card w-48 bg-base-100 shadow-xl">
         <div className="card-body">
           <h2 className="card-title">Average</h2>
-          <div className="stat-value text-secondary">${data.average}</div>
+          <div className="stat-value text-primary">${data.average}</div>
+          <p>Per Club Member</p>
         </div>
       </div>
+      <div className="card w-72 bg-base-100 shadow-xl">
+        <div className="card-body">
+          <h2 className="card-title">Members with None</h2>
+          <div className="stat-value text-secondary">{data.withNone}</div>
+          <p>
+            as of {date.getMonth()}/{date.getDate()}/{date.getFullYear()}
+          </p>
+        </div>
+      </div>
+      {/* <div className="card w-96 bg-base-100 shadow-xl">
+        <div className="card-body">
+          <h2 className="card-title">{"With < Average"}</h2>
+          <div className="stat-value text-secondary">25.6K</div>
+        </div>
+      </div> */}
     </div>
   );
 };

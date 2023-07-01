@@ -10,18 +10,19 @@ const NewClubMember: React.FC<iNewClubMemberForm> = ({ addNewMember }) => {
   const { user } = useUser();
   const [first, setFirst] = useState<string>("");
   const [last, setLast] = useState<string>("");
-  const [grade, setGrade] = useState<string>("");
+  const [grade, setGrade] = useState<string>("Choose Grade");
 
   const addMember = (e: SyntheticEvent<HTMLFormElement>) => {
     e.preventDefault();
     const data = {
       firstName: first,
       lastName: last,
-      amount: 0,
       grade: grade,
+      amount: 0,
       clubId: user?.publicMetadata.club_id,
     };
-    console.log(data);
+    addNewMember(data);
+    close();
   };
 
   const handleFirst = (e: ChangeEvent<HTMLInputElement>) => {
@@ -35,6 +36,14 @@ const NewClubMember: React.FC<iNewClubMemberForm> = ({ addNewMember }) => {
   const handleGrade = (e: ChangeEvent<HTMLSelectElement>) => {
     setGrade(e.target.value);
   };
+
+  const close = () => {
+    if (document) {
+      (document.getElementById("my_modal_1") as HTMLFormElement).close();
+    }
+  };
+
+  const disableSubmit = grade === "Choose Grade" || first === "" || last === "";
 
   return (
     <>
@@ -57,7 +66,7 @@ const NewClubMember: React.FC<iNewClubMemberForm> = ({ addNewMember }) => {
             type="text"
             name="firstName"
             placeholder="Type first name here"
-            className="input input-bordered input-accent w-full max-w-xs mt-6"
+            className="input input-bordered input-accent w-full mt-6"
             value={first}
             onChange={handleFirst}
           />
@@ -65,13 +74,12 @@ const NewClubMember: React.FC<iNewClubMemberForm> = ({ addNewMember }) => {
             type="text"
             name="lastName"
             placeholder="Type last name here"
-            className="input input-bordered input-accent w-full max-w-xs mt-4"
+            className="input input-bordered input-accent w-full mt-4"
             value={last}
             onChange={handleLast}
           />
           <select
-            className="select select-accent w-full max-w-xs mt-4"
-            defaultValue={"Choose Grade"}
+            className="select select-accent w-full mt-4"
             value={grade}
             onChange={handleGrade}
           >
@@ -84,10 +92,14 @@ const NewClubMember: React.FC<iNewClubMemberForm> = ({ addNewMember }) => {
             <option value="5">5</option>
           </select>
           <div className="modal-action">
-            <button className="btn btn-primary" type="submit">
-              Submit
+            <button
+              className="btn btn-primary"
+              type="submit"
+              disabled={disableSubmit}
+            >
+              Add New Member
             </button>
-            <button className="btn" type="button">
+            <button className="btn" onClick={close}>
               Close
             </button>
           </div>

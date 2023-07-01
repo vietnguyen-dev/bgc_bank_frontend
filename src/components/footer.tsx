@@ -3,7 +3,8 @@ const Footer: React.FC = () => {
     <footer
       style={{
         position: "absolute",
-        bottom: 0,
+        bottom: "5%",
+        right: "50%",
       }}
     >
       <p>BGC SWWA 2023</p>

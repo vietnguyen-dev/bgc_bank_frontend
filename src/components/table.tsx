@@ -1,5 +1,6 @@
 import { useState, ChangeEvent } from "react";
 import { useQuery, useMutation } from "react-query";
+import { useNavigate } from "react-router-dom";
 
 import {
   createColumnHelper,
@@ -9,13 +10,13 @@ import {
   getPaginationRowModel,
 } from "@tanstack/react-table";
 
-import controller from "../controllers";
+import controller from "../controller";
 import { iNeedClubId } from "./statistics";
 import Loading from "./loading";
 import NewClubMember from "./new-club-member";
 import NewSchoolYear from "./new-school-year";
 
-interface iClubMember {
+export interface iClubMember {
   id: number;
   first_name: string;
   last_name: string;
@@ -71,6 +72,7 @@ const columns = [
 const Table: React.FC<iNeedClubId> = ({ clubId }) => {
   const [search, setSearch] = useState<string>("");
   const [page, setPage] = useState<number>(1);
+  const navigate = useNavigate();
   const { isLoading, error, data } = useQuery(
     ["club-members", page],
     async () => {
@@ -118,18 +120,18 @@ const Table: React.FC<iNeedClubId> = ({ clubId }) => {
       <div className="flex">
         <input
           type="text"
-          placeholder="Enter Name Here"
+          placeholder="Search Name Here"
           className="input input-bordered input-accent w-full max-w-xs"
           value={search}
           onChange={handleSearch}
         />
         <div className="ml-auto">
           <NewClubMember addNewMember={addNewClubMember} />
-          <NewSchoolYear />
+          {/* <NewSchoolYear /> */}
         </div>
       </div>
       <div className="overflow-x-auto mt-8">
-        <table className="table table-zebra">
+        <table className="table table-zebra shadow-xl">
           {/* head */}
           <thead>
             {table.getHeaderGroups().map((headerGroup) => (
@@ -149,7 +151,14 @@ const Table: React.FC<iNeedClubId> = ({ clubId }) => {
           </thead>
           <tbody>
             {table.getRowModel().rows.map((row) => (
-              <tr key={row.id} className="hover">
+              <tr
+                key={row.id}
+                className="hover"
+                onClick={() => {
+                  console.log(row.original);
+                  navigate(`/club-member/${row.original.id}`);
+                }}
+              >
                 {row.getVisibleCells().map((cell) => (
                   <td key={cell.id}>
                     {flexRender(cell.column.columnDef.cell, cell.getContext())}

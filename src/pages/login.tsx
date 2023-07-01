@@ -4,7 +4,7 @@ import Footer from "../components/footer";
 
 const LoginPage: React.FC = () => {
   return (
-    <div className="flex align-center justify-center h-screen mt-10">
+    <div className="h-full flex justify-center mt-32">
       <SignIn routing="path" path="/sign-in" />
       <Footer />
     </div>
