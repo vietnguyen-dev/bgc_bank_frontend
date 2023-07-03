@@ -104,6 +104,9 @@ const NewClubMember: React.FC<iNewClubMemberForm> = ({ addNewMember }) => {
             </button>
           </div>
         </form>
+        <form method="dialog" className="modal-backdrop">
+          <button>close</button>
+        </form>
       </dialog>
     </>
   );

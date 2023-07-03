@@ -25,16 +25,16 @@ const Statistics: React.FC<iNeedClubId> = ({ clubId }) => {
 
   return (
     <div className="flex gap-4 mt-10">
-      <div className="card w-48 bg-base-100 shadow-xl">
+      <div className="card w-62 bg-base-100 shadow-xl">
         <div className="card-body">
-          <h2 className="card-title">Total </h2>
+          <h2 className="card-title">Total in Circulation</h2>
           <div className="stat-value text-primary">${data.total}</div>
           <p>
             as of {date.getMonth()}/{date.getDate()}/{date.getFullYear()}
           </p>
         </div>
       </div>
-      <div className="card w-48 bg-base-100 shadow-xl">
+      <div className="card w-52 bg-base-100 shadow-xl">
         <div className="card-body">
           <h2 className="card-title">Average</h2>
           <div className="stat-value text-primary">${data.average}</div>

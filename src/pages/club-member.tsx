@@ -1,7 +1,9 @@
 import { useState, ChangeEvent, SyntheticEvent } from "react";
-import { UserButton, useUser } from "@clerk/clerk-react";
+import { useUser } from "@clerk/clerk-react";
 import { useParams } from "react-router-dom";
 import { useQuery, useMutation } from "react-query";
+import { useNavigate } from "react-router-dom";
+
 import {
   createColumnHelper,
   flexRender,
@@ -68,9 +70,11 @@ const columns = [
 const ClubMemberPage: React.FC = () => {
   const { user } = useUser();
   let { id } = useParams();
+  const navigate = useNavigate();
 
   const [reason, setReason] = useState<string>("");
   const [amount, setAmount] = useState<string>("Choose Amount");
+  const [name, setName] = useState<string>("");
 
   const memberQuery = useQuery("club-member", async () => {
     const res = await controller.get(
@@ -78,11 +82,13 @@ const ClubMemberPage: React.FC = () => {
     );
     return res.data;
   });
+
   const reasonsQuery = useQuery("reasons", async () => {
     const res = await controller.get(`/reasons/${id}`);
     console.log(res.data);
     return res.data;
   });
+
   const updateMember = useMutation({
     mutationFn: async () => {
       try {
@@ -96,10 +102,26 @@ const ClubMemberPage: React.FC = () => {
       reasonsQuery.refetch();
     },
   });
+
+  const deleteMember = useMutation({
+    mutationFn: async () => {
+      try {
+        let res = await controller.delete(`/club-members/${id}`);
+        return res.data;
+      } catch (err) {
+        console.error(err);
+      }
+    },
+    onSuccess: () => {
+      console.log("redirecting");
+    },
+  });
+
   const postReason = useMutation({
     mutationFn: async (newReason: iNewReason) => {
       try {
         let res = await controller.post(`/reasons/${id}`, newReason);
+        console.log(res.data);
         return res.data;
       } catch (err) {
         console.error(err);
@@ -121,27 +143,43 @@ const ClubMemberPage: React.FC = () => {
 
   const date = new Date();
 
-  const disableSubmit = reason === "" || amount === "Choose Amount";
+  // const memberAmount = parseInt(memberQuery.data.amount);
+
+  // const amountDisable =
+  //   parseInt(amount) < 20 && parseInt(amount) > -memberAmount;
+  const disableSubmit = reason === "";
+
+  const disableDelete = name !== `delete`;
 
   const handleReason = (e: ChangeEvent<HTMLInputElement>) => {
     setReason(e.target.value);
   };
 
-  const handleAmount = (e: ChangeEvent<HTMLSelectElement>) => {
+  const handleAmount = (e: ChangeEvent<HTMLInputElement>) => {
     setAmount(e.target.value);
+  };
+
+  const handleName = (e: ChangeEvent<HTMLInputElement>) => {
+    setName(e.target.value);
   };
 
   const submitUpdate = (e: SyntheticEvent<HTMLFormElement>) => {
     e.preventDefault();
-    updateMember.mutate();
     postReason.mutate({
       reason: reason,
       clubMemberId: parseInt(id!),
       amountGiven: parseInt(amount),
       newTotal: parseInt(amount) + memberQuery.data.amount,
     });
+    updateMember.mutate();
     setAmount("Choose Amount");
     setReason("");
+  };
+
+  const handleDelete = (e: SyntheticEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    deleteMember.mutate();
+    navigate("/");
   };
 
   if (memberQuery.isLoading || reasonsQuery.isLoading) {
@@ -171,20 +209,15 @@ const ClubMemberPage: React.FC = () => {
           className="flex justify-center items-center flex-col mt-6"
           onSubmit={submitUpdate}
         >
-          <select
-            className="select select-accent w-full max-w-xs"
+          <input
+            type="number"
+            placeholder="Type amount here"
+            className="input input-bordered input-accent w-full max-w-xs mt-3"
+            max={20}
+            min={-memberQuery.data.amount}
             value={amount}
             onChange={handleAmount}
-            placeholder="Choose Amount"
-          >
-            <option disabled>Choose Amount</option>
-            <option value={1}>1</option>
-            <option value={2}>2</option>
-            <option value={3}>3</option>
-            <option value={5}>4</option>
-            <option value={10}>10</option>
-            <option value={20}>20</option>
-          </select>
+          />
           <input
             type="text"
             placeholder="Type reason here"
@@ -192,96 +225,151 @@ const ClubMemberPage: React.FC = () => {
             value={reason}
             onChange={handleReason}
           />
-          <button
-            className="btn btn-primary mt-3"
-            type="submit"
-            disabled={disableSubmit}
-          >
-            Update
-          </button>
+          <div className="flex mt-3">
+            <button
+              className="btn btn-primary"
+              type="submit"
+              disabled={disableSubmit}
+            >
+              Update
+            </button>
+          </div>
         </form>
         {reasonsQuery.data.length > 0 ? (
-          <table className="table table-zebra mt-10 shadow-2xl">
-            {/* head */}
-            <thead>
-              {table.getHeaderGroups().map((headerGroup) => (
-                <tr key={headerGroup.id}>
-                  {headerGroup.headers.map((header) => (
-                    <th key={header.id}>
-                      {header.isPlaceholder
-                        ? null
-                        : flexRender(
-                            header.column.columnDef.header,
-                            header.getContext()
-                          )}
-                    </th>
-                  ))}
-                </tr>
-              ))}
-            </thead>
-            <tbody>
-              {table.getRowModel().rows.map((row) => (
-                <tr key={row.id} className="hover">
-                  {row.getVisibleCells().map((cell) => (
-                    <td key={cell.id}>
-                      {flexRender(
-                        cell.column.columnDef.cell,
-                        cell.getContext()
-                      )}
-                    </td>
-                  ))}
-                </tr>
-              ))}
-            </tbody>
-          </table>
+          <>
+            <table className="table table-zebra mt-10 shadow-2xl">
+              {/* head */}
+              <thead>
+                {table.getHeaderGroups().map((headerGroup) => (
+                  <tr key={headerGroup.id}>
+                    {headerGroup.headers.map((header) => (
+                      <th key={header.id}>
+                        {header.isPlaceholder
+                          ? null
+                          : flexRender(
+                              header.column.columnDef.header,
+                              header.getContext()
+                            )}
+                      </th>
+                    ))}
+                  </tr>
+                ))}
+              </thead>
+              <tbody>
+                {table.getRowModel().rows.map((row) => (
+                  <tr key={row.id} className="hover">
+                    {row.getVisibleCells().map((cell) => (
+                      <td key={cell.id}>
+                        {flexRender(
+                          cell.column.columnDef.cell,
+                          cell.getContext()
+                        )}
+                      </td>
+                    ))}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+            <div className="join mt-5 flex justify-center">
+              <button
+                className="join-item btn"
+                // disabled={page === 1}
+                // onClick={() => setPage((prevPage) => prevPage - 1)}
+              >
+                «
+              </button>
+              <button className="join-item btn pointer-events-none">
+                Page
+              </button>
+              <button
+                className="join-item btn"
+                // onClick={() => setPage((prevPage) => prevPage + 1)}
+                disabled={data.length < 10}
+              >
+                »
+              </button>
+            </div>
+          </>
         ) : (
-          <p className="text-center mt-10">no data available</p>
+          <p className="text-center mt-10">No Data Available</p>
         )}
-        <div className="w-full">
-          <div className="join mt-5 flex justify-center">
-            <button
-              className="join-item btn"
-              // disabled={page === 1}
-              // onClick={() => setPage((prevPage) => prevPage - 1)}
-            >
-              «
-            </button>
-            <button className="join-item btn pointer-events-none">Page</button>
-            <button
-              className="join-item btn"
-              // onClick={() => setPage((prevPage) => prevPage + 1)}
-              disabled={data.length < 10}
-            >
-              »
-            </button>
-          </div>
-          <div className="ml-auto">
-            <button
-              className="btn btn-warning"
-              onClick={() => {
-                if (document) {
-                  (
-                    document.getElementById("my_modal_3") as HTMLFormElement
-                  ).showModal();
-                }
-              }}
-            >
-              DELETE
-            </button>
-            <dialog id="my_modal_3" className="modal">
-              <form method="dialog" className="modal-box">
-                <h3 className="font-bold text-lg">
-                  Delete {memberQuery.data.first_name}{" "}
-                  {memberQuery.data.last_name}{" "}
-                </h3>
-                <div className="modal-action">
-                  {/* if there is a button in form, it will close the modal */}
-                  <button className="btn">Close</button>
-                </div>
-              </form>
-            </dialog>
-          </div>
+        <div className="flex justify-end">
+          <button
+            className="btn btn-active btn-secondary mr-3"
+            onClick={() => {
+              if (document) {
+                (
+                  document.getElementById("my_modal_4") as HTMLFormElement
+                ).showModal();
+              }
+            }}
+          >
+            Change Clubs
+          </button>
+          <button
+            className="btn btn-warning"
+            onClick={() => {
+              if (document) {
+                (
+                  document.getElementById("my_modal_3") as HTMLFormElement
+                ).showModal();
+              }
+            }}
+          >
+            DELETE
+          </button>
         </div>
+        <dialog id="my_modal_3" className="modal">
+          <form method="dialog" className="modal-box" onSubmit={handleDelete}>
+            <h3 className="font-bold text-lg">
+              Delete {memberQuery.data.first_name} {memberQuery.data.last_name}{" "}
+            </h3>
+            <p className="mt-3">Deleting a club member is permanent</p>
+            <p className="mt-3">Type "delete" to delete this member</p>
+            <input
+              type="text"
+              // placeholder={`Type ${memberQuery.data.first_name} ${memberQuery.data.last_name} here`}
+              className="input input-bordered input-accent w-full mt-3"
+              value={name}
+              onChange={handleName}
+            />
+            <div className="modal-action">
+              <button
+                className="btn btn-warning"
+                disabled={disableDelete}
+                type="submit"
+              >
+                Delete Member
+              </button>
+              <button
+                className="btn"
+                type="button"
+                onClick={() => {
+                  if (document) {
+                    (
+                      document.getElementById("my_modal_3") as HTMLFormElement
+                    ).close();
+                    setName("");
+                  }
+                }}
+              >
+                Close
+              </button>
+            </div>
+          </form>
+          <form method="dialog" className="modal-backdrop">
+            <button>close</button>
+          </form>
+        </dialog>
+        <dialog id="my_modal_4" className="modal">
+          <form method="dialog" className="modal-box">
+            <h3 className="font-bold text-lg">Hello!</h3>
+            <p className="py-4">Press ESC key or click outside to close</p>
+          </form>
+          <form method="dialog" className="modal-backdrop">
+            <button>close</button>
+          </form>
+        </dialog>
       </div>
     </Page>
   );

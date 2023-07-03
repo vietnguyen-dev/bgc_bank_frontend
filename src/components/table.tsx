@@ -73,7 +73,7 @@ const Table: React.FC<iNeedClubId> = ({ clubId }) => {
   const [search, setSearch] = useState<string>("");
   const [page, setPage] = useState<number>(1);
   const navigate = useNavigate();
-  const { isLoading, error, data } = useQuery(
+  const { isLoading, error, data, refetch } = useQuery(
     ["club-members", page],
     async () => {
       try {
@@ -93,6 +93,9 @@ const Table: React.FC<iNeedClubId> = ({ clubId }) => {
       } catch (err) {
         console.error(err);
       }
+    },
+    onSuccess: () => {
+      refetch();
     },
   });
 
