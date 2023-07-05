@@ -13,10 +13,11 @@ import "./App.css";
 import LoginPage from "./pages/login";
 import Dashboard from "./pages/dashboard";
 import ClubMemberPage from "./pages/club-member";
+import Error from "./pages/404";
 
-if (!import.meta.env.VITE_REACT_APP_CLERK_PUBLISHABLE_KEY) {
-  throw new Error("Missing Publishable Key");
-}
+// if (!import.meta.env.VITE_REACT_APP_CLERK_PUBLISHABLE_KEY) {
+//   throw new Error("Missing Publishable Key");
+// }
 
 const clerkPubKey = import.meta.env.VITE_REACT_APP_CLERK_PUBLISHABLE_KEY;
 const queryClient = new QueryClient();

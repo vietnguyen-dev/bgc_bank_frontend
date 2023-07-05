@@ -1,9 +1,8 @@
 import { useState, ChangeEvent, SyntheticEvent } from "react";
 import { useUser } from "@clerk/clerk-react";
 import { useParams } from "react-router-dom";
-import { useQuery, useMutation } from "react-query";
+import { useQuery, useQueryClient, useMutation } from "react-query";
 import { useNavigate } from "react-router-dom";
-
 import {
   createColumnHelper,
   flexRender,
@@ -73,8 +72,11 @@ const ClubMemberPage: React.FC = () => {
   const navigate = useNavigate();
 
   const [reason, setReason] = useState<string>("");
-  const [amount, setAmount] = useState<string>("Choose Amount");
+  const [amount, setAmount] = useState<string>("");
   const [name, setName] = useState<string>("");
+  const [page, setPage] = useState<number>(1);
+
+  const queryClient = useQueryClient();
 
   const memberQuery = useQuery("club-member", async () => {
     const res = await controller.get(
@@ -83,8 +85,8 @@ const ClubMemberPage: React.FC = () => {
     return res.data;
   });
 
-  const reasonsQuery = useQuery("reasons", async () => {
-    const res = await controller.get(`/reasons/${id}`);
+  const reasonsQuery = useQuery(["reasons", page], async () => {
+    const res = await controller.get(`/reasons/${id}?page=${page}`);
     console.log(res.data);
     return res.data;
   });
@@ -96,10 +98,11 @@ const ClubMemberPage: React.FC = () => {
         return res.data;
       } catch (err) {
         console.error(err);
+        throw err;
       }
     },
     onSuccess: () => {
-      reasonsQuery.refetch();
+      queryClient.invalidateQueries({ queryKey: ["reasons"] });
     },
   });
 
@@ -110,10 +113,11 @@ const ClubMemberPage: React.FC = () => {
         return res.data;
       } catch (err) {
         console.error(err);
+        throw err;
       }
     },
     onSuccess: () => {
-      console.log("redirecting");
+      navigate("/");
     },
   });
 
@@ -128,7 +132,7 @@ const ClubMemberPage: React.FC = () => {
       }
     },
     onSuccess: () => {
-      memberQuery.refetch();
+      queryClient.invalidateQueries({ queryKey: ["club-member"] });
     },
   });
 
@@ -143,13 +147,15 @@ const ClubMemberPage: React.FC = () => {
 
   const date = new Date();
 
-  // const memberAmount = parseInt(memberQuery.data.amount);
-
-  // const amountDisable =
-  //   parseInt(amount) < 20 && parseInt(amount) > -memberAmount;
-  const disableSubmit = reason === "";
+  const amountDisable =
+    parseInt(amount!) >= -memberQuery.data?.amount &&
+    memberQuery.data?.amount !== undefined &&
+    parseInt(amount!) !== 0;
+  const disableSubmit = reason !== "" && amountDisable;
 
   const disableDelete = name !== `delete`;
+
+  console.log("whole", disableSubmit, "amountDisable", amountDisable);
 
   const handleReason = (e: ChangeEvent<HTMLInputElement>) => {
     setReason(e.target.value);
@@ -168,18 +174,17 @@ const ClubMemberPage: React.FC = () => {
     postReason.mutate({
       reason: reason,
       clubMemberId: parseInt(id!),
-      amountGiven: parseInt(amount),
-      newTotal: parseInt(amount) + memberQuery.data.amount,
+      amountGiven: parseInt(amount!),
+      newTotal: parseInt(amount!) + memberQuery.data.amount,
     });
     updateMember.mutate();
-    setAmount("Choose Amount");
+    setAmount("");
     setReason("");
   };
 
   const handleDelete = (e: SyntheticEvent<HTMLFormElement>) => {
     e.preventDefault();
     deleteMember.mutate();
-    navigate("/");
   };
 
   if (memberQuery.isLoading || reasonsQuery.isLoading) {
@@ -197,7 +202,10 @@ const ClubMemberPage: React.FC = () => {
           <h1 className="text-3xl text-center">
             {memberQuery.data.first_name} {memberQuery.data.last_name}
           </h1>
-          <p className="text-center mt-3">Grade: {memberQuery.data.grade}</p>
+          <div className="flex justify-center">
+            <p className="text-center mt-3 mr-4">Id: {memberQuery.data.id}</p>
+            <p className="text-center mt-3">Grade: {memberQuery.data.grade}</p>
+          </div>
           <h2 className="text-center text-6xl mt-16">
             {memberQuery.data.amount}
           </h2>
@@ -215,7 +223,7 @@ const ClubMemberPage: React.FC = () => {
             className="input input-bordered input-accent w-full max-w-xs mt-3"
             max={20}
             min={-memberQuery.data.amount}
-            value={amount}
+            value={amount!}
             onChange={handleAmount}
           />
           <input
@@ -229,7 +237,7 @@ const ClubMemberPage: React.FC = () => {
             <button
               className="btn btn-primary"
               type="submit"
-              disabled={disableSubmit}
+              disabled={!disableSubmit}
             >
               Update
             </button>
@@ -273,8 +281,8 @@ const ClubMemberPage: React.FC = () => {
             <div className="join mt-5 flex justify-center">
               <button
                 className="join-item btn"
-                // disabled={page === 1}
-                // onClick={() => setPage((prevPage) => prevPage - 1)}
+                disabled={page === 1}
+                onClick={() => setPage((prevPage) => prevPage - 1)}
               >
                 «
               </button>
@@ -283,8 +291,8 @@ const ClubMemberPage: React.FC = () => {
               </button>
               <button
                 className="join-item btn"
-                // onClick={() => setPage((prevPage) => prevPage + 1)}
-                disabled={data.length < 10}
+                onClick={() => setPage((prevPage) => prevPage + 1)}
+                disabled={reasonsQuery.data.length < 5}
               >
                 »
               </button>

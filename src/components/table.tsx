@@ -6,6 +6,7 @@ import {
   createColumnHelper,
   flexRender,
   getCoreRowModel,
+  SortingState,
   useReactTable,
   getPaginationRowModel,
 } from "@tanstack/react-table";
@@ -14,7 +15,6 @@ import controller from "../controller";
 import { iNeedClubId } from "./statistics";
 import Loading from "./loading";
 import NewClubMember from "./new-club-member";
-import NewSchoolYear from "./new-school-year";
 
 export interface iClubMember {
   id: number;
@@ -72,7 +72,11 @@ const columns = [
 const Table: React.FC<iNeedClubId> = ({ clubId }) => {
   const [search, setSearch] = useState<string>("");
   const [page, setPage] = useState<number>(1);
+
   const navigate = useNavigate();
+
+  const [sorting, setSorting] = useState<SortingState>([]);
+
   const { isLoading, error, data, refetch } = useQuery(
     ["club-members", page],
     async () => {
@@ -102,6 +106,10 @@ const Table: React.FC<iNeedClubId> = ({ clubId }) => {
   const table = useReactTable({
     data,
     columns,
+    state: {
+      sorting,
+    },
+    onSortingChange: setSorting,
     getCoreRowModel: getCoreRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
   });
@@ -139,16 +147,31 @@ const Table: React.FC<iNeedClubId> = ({ clubId }) => {
           <thead>
             {table.getHeaderGroups().map((headerGroup) => (
               <tr key={headerGroup.id}>
-                {headerGroup.headers.map((header) => (
-                  <th key={header.id}>
-                    {header.isPlaceholder
-                      ? null
-                      : flexRender(
-                          header.column.columnDef.header,
-                          header.getContext()
-                        )}
-                  </th>
-                ))}
+                {headerGroup.headers.map((header) => {
+                  return (
+                    <th key={header.id} colSpan={header.colSpan}>
+                      {header.isPlaceholder ? null : (
+                        <div
+                          {...{
+                            className: header.column.getCanSort()
+                              ? "cursor-pointer select-none"
+                              : "",
+                            onClick: header.column.getToggleSortingHandler(),
+                          }}
+                        >
+                          {flexRender(
+                            header.column.columnDef.header,
+                            header.getContext()
+                          )}
+                          {{
+                            asc: " 🔼",
+                            desc: " 🔽",
+                          }[header.column.getIsSorted() as string] ?? null}
+                        </div>
+                      )}
+                    </th>
+                  );
+                })}
               </tr>
             ))}
           </thead>
@@ -158,7 +181,6 @@ const Table: React.FC<iNeedClubId> = ({ clubId }) => {
                 key={row.id}
                 className="hover"
                 onClick={() => {
-                  console.log(row.original);
                   navigate(`/club-member/${row.original.id}`);
                 }}
               >
@@ -191,6 +213,7 @@ const Table: React.FC<iNeedClubId> = ({ clubId }) => {
           </button>
         </div>
       </div>
+      <pre>{JSON.stringify(sorting, null, 2)}</pre>
     </div>
   );
 };
