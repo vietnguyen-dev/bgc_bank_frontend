@@ -18,7 +18,6 @@ const NewClubMember: React.FC<iNewClubMemberForm> = ({ addNewMember }) => {
       firstName: first,
       lastName: last,
       grade: grade,
-      amount: 0,
       clubId: user?.publicMetadata.club_id,
     };
     addNewMember(data);
