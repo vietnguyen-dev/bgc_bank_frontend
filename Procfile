@@ -1,1 +1,1 @@
-web: yarn preview --host
+web: yarn start
