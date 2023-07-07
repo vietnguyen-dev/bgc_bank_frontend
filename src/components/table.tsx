@@ -1,4 +1,4 @@
-import { useState, ChangeEvent } from "react";
+import { useState, ChangeEvent, SyntheticEvent } from "react";
 import { useQuery, useMutation } from "react-query";
 import { useNavigate } from "react-router-dom";
 
@@ -71,6 +71,7 @@ const columns = [
 
 const Table: React.FC<iNeedClubId> = ({ clubId }) => {
   const [search, setSearch] = useState<string>("");
+  const [searchValue, setSearchValue] = useState<string>("");
   const [page, setPage] = useState<number>(1);
 
   const navigate = useNavigate();
@@ -78,7 +79,7 @@ const Table: React.FC<iNeedClubId> = ({ clubId }) => {
   const [sorting, setSorting] = useState<SortingState>([]);
 
   const { isLoading, error, data, refetch } = useQuery(
-    ["club-members", page, sorting],
+    ["club-members", page, sorting, searchValue],
     async () => {
       try {
         let res = await controller.get(`/club-members/${clubId}`, {
@@ -86,6 +87,7 @@ const Table: React.FC<iNeedClubId> = ({ clubId }) => {
             page: page,
             sortField: sorting[0]?.id || "id",
             sortDirection: sorting[0]?.desc ? "DESC" : "ASC" || "ASC",
+            search: searchValue.length > 0 ? searchValue : null,
           },
         });
         console.log(res.data);
@@ -124,6 +126,11 @@ const Table: React.FC<iNeedClubId> = ({ clubId }) => {
     setSearch(e.target.value);
   };
 
+  const submitSearch = (e: SyntheticEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setSearchValue(search);
+  };
+
   const addNewClubMember = (member: iNewClubMember) => {
     postMember.mutate(member);
   };
@@ -135,13 +142,15 @@ const Table: React.FC<iNeedClubId> = ({ clubId }) => {
   return (
     <div className="my-4 mt-10">
       <div className="flex">
-        <input
-          type="text"
-          placeholder="Search Name Here"
-          className="input input-bordered input-accent w-full max-w-xs"
-          value={search}
-          onChange={handleSearch}
-        />
+        <form onSubmit={submitSearch}>
+          <input
+            type="text"
+            placeholder="Search Name Here"
+            className="input input-bordered input-accent w-full"
+            value={search}
+            onChange={handleSearch}
+          />
+        </form>
         <div className="ml-auto">
           <NewClubMember addNewMember={addNewClubMember} />
         </div>
