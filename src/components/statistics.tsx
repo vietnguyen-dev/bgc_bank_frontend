@@ -50,12 +50,15 @@ const Statistics: React.FC<iNeedClubId> = ({ clubId }) => {
           </p>
         </div>
       </div>
-      {/* <div className="card w-96 bg-base-100 shadow-xl">
+      <div className="card w-96 bg-base-100 shadow-xl">
         <div className="card-body">
-          <h2 className="card-title">{"With < Average"}</h2>
-          <div className="stat-value text-secondary">25.6K</div>
+          <h2 className="card-title">{"With Less than Average"}</h2>
+          <div className="stat-value text-secondary">{data.lessAverage}</div>
+          <p>
+            as of {date.getMonth()}/{date.getDate()}/{date.getFullYear()}
+          </p>
         </div>
-      </div> */}
+      </div>
     </div>
   );
 };

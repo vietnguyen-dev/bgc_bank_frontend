@@ -78,10 +78,16 @@ const Table: React.FC<iNeedClubId> = ({ clubId }) => {
   const [sorting, setSorting] = useState<SortingState>([]);
 
   const { isLoading, error, data, refetch } = useQuery(
-    ["club-members", page],
+    ["club-members", page, sorting],
     async () => {
       try {
-        let res = await controller.get(`/club-members/${clubId}?page=${page}`);
+        let res = await controller.get(`/club-members/${clubId}`, {
+          params: {
+            page: page,
+            sortField: sorting[0]?.id || "id",
+            sortDirection: sorting[0]?.desc ? "DESC" : "ASC" || "ASC",
+          },
+        });
         console.log(res.data);
         return res.data;
       } catch (err) {
@@ -138,7 +144,6 @@ const Table: React.FC<iNeedClubId> = ({ clubId }) => {
         />
         <div className="ml-auto">
           <NewClubMember addNewMember={addNewClubMember} />
-          {/* <NewSchoolYear /> */}
         </div>
       </div>
       <div className="overflow-x-auto mt-8">
@@ -207,13 +212,12 @@ const Table: React.FC<iNeedClubId> = ({ clubId }) => {
           <button
             className="join-item btn"
             onClick={() => setPage((prevPage) => prevPage + 1)}
-            disabled={data.length < 10}
+            disabled={data?.length < 10}
           >
             »
           </button>
         </div>
       </div>
-      <pre>{JSON.stringify(sorting, null, 2)}</pre>
     </div>
   );
 };
