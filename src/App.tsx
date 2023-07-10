@@ -21,6 +21,8 @@ import ClubMemberPage from "./pages/club-member";
 const clerkPubKey = import.meta.env.VITE_REACT_APP_CLERK_PUBLISHABLE_KEY;
 const queryClient = new QueryClient();
 
+console.log(clerkPubKey);
+
 function ClerkProviderWithRoutes() {
   const navigate = useNavigate();
 
