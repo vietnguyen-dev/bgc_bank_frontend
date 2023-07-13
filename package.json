@@ -7,7 +7,8 @@
     "dev": "vite",
     "build": "tsc && vite build",
     "lint": "eslint src --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
-    "preview": "vite preview --host"
+    "preview": "vite preview --host",
+    "start": "serve dist -s -n -L -p $PORT"
   },
   "dependencies": {
     "@clerk/clerk-react": "^4.20.5",
@@ -17,7 +18,8 @@
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-query": "^3.39.3",
-    "react-router-dom": "^6.14.0"
+    "react-router-dom": "^6.14.0",
+    "serve": "^14.2.0"
   },
   "devDependencies": {
     "@types/react": "^18.0.37",
