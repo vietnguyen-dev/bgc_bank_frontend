@@ -8,7 +8,7 @@
     "build": "tsc && vite build",
     "lint": "eslint src --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "preview": "vite preview --host",
-    "start": "serve dist -s -n -L -p $PORT"
+    "start": "serve dist"
   },
   "dependencies": {
     "@clerk/clerk-react": "^4.20.5",
