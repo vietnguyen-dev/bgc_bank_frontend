@@ -4,7 +4,6 @@ import {
   SignedOut,
   RedirectToSignIn,
 } from "@clerk/clerk-react";
-// import { light } from "@clerk/themes";
 import { BrowserRouter, Route, Routes, useNavigate } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "react-query";
 
