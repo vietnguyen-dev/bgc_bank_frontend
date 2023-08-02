@@ -1,4 +1,4 @@
-import { useState, ChangeEvent, SyntheticEvent } from "react";
+import { useState, ChangeEvent, SyntheticEvent, useEffect } from "react";
 import { useQuery, useMutation } from "react-query";
 import { useNavigate } from "react-router-dom";
 
@@ -135,6 +135,10 @@ const Table: React.FC<iNeedClubId> = ({ clubId }) => {
     postMember.mutate(member);
   };
 
+  useEffect(() => {
+    window.scrollTo(0, document.body.scrollHeight);
+  }, [page]);
+
   if (isLoading) return <Loading />;
 
   if (error) return <p>error</p>;
@@ -211,7 +215,9 @@ const Table: React.FC<iNeedClubId> = ({ clubId }) => {
           <button
             className="join-item btn"
             disabled={page === 1}
-            onClick={() => setPage((prevPage) => prevPage - 1)}
+            onClick={() => {
+              setPage((prevPage) => prevPage - 1);
+            }}
           >
             «
           </button>
@@ -220,7 +226,9 @@ const Table: React.FC<iNeedClubId> = ({ clubId }) => {
           </button>
           <button
             className="join-item btn"
-            onClick={() => setPage((prevPage) => prevPage + 1)}
+            onClick={() => {
+              setPage((prevPage) => prevPage + 1);
+            }}
             disabled={data?.length < 10}
           >
             »

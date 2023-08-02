@@ -24,13 +24,7 @@ function ClerkProviderWithRoutes() {
   const navigate = useNavigate();
 
   return (
-    <ClerkProvider
-      publishableKey={clerkPubKey}
-      navigate={(to) => navigate(to)}
-      // appearance={{
-      //   baseTheme: light,
-      // }}
-    >
+    <ClerkProvider publishableKey={clerkPubKey} navigate={(to) => navigate(to)}>
       <Routes>
         <Route path="/sign-in/*" element={<LoginPage />} />
         <Route
